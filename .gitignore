@@ -1,0 +1,12 @@
+########################################
+# macOS SYSTEM FILES
+########################################
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
