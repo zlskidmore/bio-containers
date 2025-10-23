@@ -16,7 +16,7 @@ Managing individual repositories for each tool became unnecessarily fragmented. 
 You can build any container individually, here is an example workflow:
 ```bash
 cd samtools
-docker build -t zlskidmore/samtools:latest .
+docker buildx build --platform linux/amd64,linux/arm64 -t zlskidmore/samtools:latest .
 ```
 
 ## Licensing & Notes
