@@ -1,5 +1,5 @@
 # Overview
-Docker image instructions for samtools, general bam file utilities
+Docker image instructions for kallisto, k-mer aware aligner
 
 # Build
 ```bash
