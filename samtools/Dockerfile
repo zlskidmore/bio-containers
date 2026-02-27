@@ -19,7 +19,10 @@ RUN apt-get update -y && apt-get install -y \
     vim \
     less \
     libcurl4-openssl-dev \
-    wget
+    wget \
+    tar \
+    lz4 \
+    zstd
 
 # download the suite of tools
 WORKDIR /usr/local/bin/
