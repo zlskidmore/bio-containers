@@ -1,39 +1,37 @@
-# work from latest LTS ubuntu release
-FROM ubuntu:24.04
+####################################################################
+############ Standard Setup ########################################
+FROM zlskidmore/bio-base:1.0.0
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # set the environment variables
-ENV sigprofilerextractor_version="1.2.4"
-ENV DEBIAN_FRONTEND="noninteractive"
+ENV SIGPROFILEREXTRACTOR_VERSION=1.2.6
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # run update and install necessary tools ubuntu tools
-RUN apt-get update -y && apt-get install -y \
-    build-essential \
-    curl \
-    unzip \
-    python3 \
-    bzip2 \
-    libnss-sss \
-    python3-pip \
-    vim \
-    less \
-    wget \
-    zlib1g-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg8-dev
 
-# Install sigProfilerExtractor
-WORKDIR /usr/local/bin/
+#####################################################################
+########### sigProfilerExtractor ####################################
 
-RUN wget https://github.com/AlexandrovLab/SigProfilerExtractor/archive/refs/tags/v${sigprofilerextractor_version}.tar.gz
-RUN tar -xzvf v${sigprofilerextractor_version}.tar.gz
-RUN cd SigProfilerExtractor-${sigprofilerextractor_version} && pip install --no-cache-dir .
+WORKDIR /tmp/build
 
-# download test data, and reference data
-RUN python3 -c "from SigProfilerMatrixGenerator import install as genInstall; genInstall.install('GRCh38'); genInstall.install('GRCh37')"
-RUN mkdir -p /opt/testData
-WORKDIR /opt/testData
-RUN wget  ftp://alexandrovlab-ftp.ucsd.edu/pub/tools/SigProfilerExtractor/Example_data/21BRCA.zip
-RUN unzip 21BRCA.zip
+RUN set -eux; \
+    wget https://github.com/AlexandrovLab/SigProfilerExtractor/archive/refs/tags/v${SIGPROFILEREXTRACTOR_VERSION}.tar.gz; \
+    tar -xzf v${SIGPROFILEREXTRACTOR_VERSION}.tar.gz; \
+    cd SigProfilerExtractor-${SIGPROFILEREXTRACTOR_VERSION}; \
+    pip install --no-cache-dir .; \
+    cd /; \
+    rm -rf SigProfilerExtractor-${SIGPROFILEREXTRACTOR_VERSION}*
 
-# set default command
-CMD SigProfilerExtractor --help
+RUN set -eux; \
+    python3 -c "from SigProfilerMatrixGenerator import install as genInstall; genInstall.install('GRCh38'); genInstall.install('GRCh37')"; \
+    mkdir -p /data/; \
+    cd /data; \
+    wget -q ftp://alexandrovlab-ftp.ucsd.edu/pub/tools/SigProfilerExtractor/Example_data/21BRCA.zip; \
+    unzip -q 21BRCA.zip; \
+    rm -f 21BRCA.zip
+
+WORKDIR /data
+
