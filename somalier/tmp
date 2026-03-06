@@ -1,0 +1,88 @@
+####################################################################
+############ Standard Setup ########################################
+FROM zlskidmore/bio-base:1.0.0
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV somalier_version=0.3.1
+ENV nim_version=v1.6.10
+
+# additional libs needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xz-utils \
+    libssl-dev \
+    libtool \
+    libpcre3-dev \
+    libopenblas-dev \
+    libgomp1 \
+  && rm -rf /var/lib/apt/lists/*
+
+#####################################################################
+############# Somalier #############################################
+
+WORKDIR /apps
+
+# Install nim
+RUN set -eux && \
+    git clone -b "${nim_version}" --depth 1 https://github.com/nim-lang/nim "nim-${nim_version}" && \
+    cd "nim-${nim_version}" && \
+    /bin/bash build_all.sh
+ENV PATH="/apps/nim-${nim_version}/bin:${PATH}"
+
+# hts-nim
+RUN set -eux && \
+    git clone --depth 1 https://github.com/brentp/hts-nim.git && \
+    cd hts-nim && \
+    nimble install -y
+
+# slivar
+RUN set -eux && \
+    git clone --depth 1 https://github.com/brentp/slivar.git
+
+# arm64 fix: remove -mpopcnt anywhere inside slivar
+RUN set -eux && \
+    if [ "$(uname -m)" = "aarch64" ]; then \
+      find /apps/slivar -type f \( -name "*.nim" -o -name "*.cfg" -o -name "*.nimble" \) -exec sed -i '/-mpopcnt/d' {} \; || true; \
+    fi
+
+RUN set -eux && \
+    cd /apps/slivar && \
+    nimble install -y
+
+# somalier (use git clone so paths match official + easier patching)
+RUN set -eux && \
+    git clone --depth 1 --branch "v${somalier_version}" https://github.com/brentp/somalier.git
+
+# arm64 fixes for somalier
+RUN set -eux && \
+    if [ "$(uname -m)" = "aarch64" ]; then \
+      find /apps/somalier -type f \( -name "*.nim" -o -name "*.cfg" -o -name "*.nimble" \) -exec sed -i '/-mpopcnt/d' {} \; || true; \
+      sed -i '/slivar/d' /apps/somalier/somalier.nimble || true; \
+    fi
+
+# build somalier
+RUN set -eux && \
+    cd /apps/somalier && \
+    nimble install -d -y && \
+    nim c -d:danger -d:nsb_static -d:release -d:nimDebugDlOpen -d:openmp \
+      -d:blas=openblas -d:lapack=openblas \
+      -o:/usr/local/bin/somalier src/somalier && \
+    somalier --help >/dev/null
+    
+######################################################
+########## Helper files ###############################
+
+WORKDIR /opt/somalier
+RUN set -eux; \
+    mkdir -p /opt/somalier; \
+    wget -q "https://github.com/brentp/somalier/files/2866407/sites.hg38.vcf.gz"; \
+    gunzip -f sites.hg38.vcf.gz; \
+    wget -q "https://github.com/brentp/somalier/files/2866408/sites.chr.hg38.vcf.gz"; \
+    gunzip -f sites.chr.hg38.vcf.gz; \
+    wget -q -O sites.hg37.vcf.gz "https://github.com/brentp/somalier/files/2774846/sites.vcf.gz"; \
+    gunzip -f sites.hg37.vcf.gz
+
+#######################################################
+#################3 cleanup ###########################
+# Clean build dir
+RUN rm -rf /tmp/build
