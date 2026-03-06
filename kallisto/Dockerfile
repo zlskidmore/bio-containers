@@ -1,35 +1,40 @@
-# work from latest LTS ubuntu release
-FROM ubuntu:24.04
+####################################################################
+############ Standard Setup ########################################
+FROM zlskidmore/bio-base:1.0.0
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # set the environment variables
-ENV kallisto_version=0.51.1
+ENV KALLISTO_VERSION="0.52.0"
 
-# run update and install necessary tools
-RUN apt-get update -y && apt-get install -y \
-    build-essential \
+# Additional libs needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
-    zlib1g-dev \
     libhdf5-dev \
-    libnss-sss \
-    curl \
-    autoconf \
-    vim \
-    less \
-    wget
+    && rm -rf /var/lib/apt/lists/*
 
-# install kallisto
-WORKDIR /usr/local/bin/
-RUN curl -SL https://github.com/pachterlab/kallisto/archive/v${kallisto_version}.tar.gz \
-    | tar -zxvC /usr/local/bin/
-WORKDIR /usr/local/bin/kallisto-${kallisto_version}/ext/htslib
-RUN autoheader
-RUN autoconf
-RUN mkdir -p /usr/bin/kallisto/kallisto-${kallisto_version}/build
-WORKDIR /usr/local/bin/kallisto-${kallisto_version}/build
-RUN cmake ..
-RUN make
-RUN make install
-WORKDIR /usr/local/bin
+####################################################################
+############## Kallisto Install ####################################
 
-# set default command
-CMD ["kallisto"]
+WORKDIR /tmp/build
+
+RUN set -eux; \
+    mkdir -p /tmp/build; \
+    cd /tmp/build; \
+    curl -fsSL "https://github.com/pachterlab/kallisto/archive/v${KALLISTO_VERSION}.tar.gz" -o kallisto.tar.gz; \
+    tar -xzf kallisto.tar.gz; \
+    ls -la; \
+    ls -la "kallisto-${KALLISTO_VERSION}"; \
+    ls -la "kallisto-${KALLISTO_VERSION}/ext"; \
+    cd "kallisto-${KALLISTO_VERSION}/ext/htslib"; \
+    autoheader; \
+    autoconf; \
+    cd "/tmp/build/kallisto-${KALLISTO_VERSION}"; \
+    mkdir -p build; \
+    cd build; \
+    cmake ..; \
+    make; \
+    make install; \
+    rm -rf /tmp/build
+
+WORKDIR /data

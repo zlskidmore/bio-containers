@@ -1,27 +1,29 @@
-# work from latest LTS ubuntu release
-FROM ubuntu:24.04
+####################################################################
+############ Standard Setup ########################################
+FROM zlskidmore/bio-base:1.0.0
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # set the environment variables
-ENV version=3.4.0
-ENV PICARD=/usr/local/bin/picard/picard.jar
+ENV PICARD_VERSION=3.4.0 \
+    PICARD_DIR=/usr/local/share/picard \
+    PICARD_JAR=/usr/local/share/picard/picard.jar
 
-# run update
-RUN apt-get update -y && apt-get install -y \
-    libnss-sss \
+# Additional libs needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-17-jre \
-    curl \
-    less \
-    vim  \
-    wget \
     r-base \
-    r-base-dev
+    r-base-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+####################################################################
+########### setup picard ###########################################
+RUN set -eux; \
+    mkdir -p "${PICARD_DIR}"; \
+    curl -fsSL -o "${PICARD_JAR}" \
+        "https://github.com/broadinstitute/picard/releases/download/${PICARD_VERSION}/picard.jar"; \
+    chmod 0644 "${PICARD_JAR}"; \
+    printf '#!/bin/sh\nexec java -jar /usr/local/share/picard/picard.jar "$@"\n' > /usr/local/bin/picard; \
+    chmod 0755 /usr/local/bin/picard
 
-# download picard tools and change permissions
-RUN mkdir -p /usr/local/bin/picard \
-    && curl -SL https://github.com/broadinstitute/picard/releases/download/${version}/picard.jar \
-    > /usr/local/bin/picard/picard.jar
-RUN chmod 0644 /usr/local/bin/picard/picard.jar
-
-# set default command to print help
-CMD ["java", "-jar", "/usr/local/bin/picard/picard.jar"]
+WORKDIR /data
