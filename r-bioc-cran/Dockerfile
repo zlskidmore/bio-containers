@@ -1,47 +1,80 @@
-# work from latest LTS ubuntu release
-FROM ubuntu:24.04
+####################################################################
+############ Standard Setup ########################################
+FROM zlskidmore/bio-base:1.0.0
 
-# set variables
-ENV r_version=4.5.1
+ARG DEBIAN_FRONTEND=noninteractive
 
-# run update
-RUN apt-get update -y && apt-get install -y \
-  gfortran \
-  libreadline-dev \
-  libpcre3-dev \
-  libcurl4-openssl-dev \
-  build-essential \
-  zlib1g-dev \
-  libbz2-dev \
-  liblzma-dev \
-  openjdk-8-jdk \
-  wget \
-  libssl-dev \
-  libxml2-dev \
-  libnss-sss \
-  libpcre2-dev \
-  libfreetype6-dev \
-  libfontconfig1-dev \
-  git \
-  vim \
-  less
+# set the environment variables
+ENV R_VERSION=4.5.3
+
+# Additional libs needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gfortran \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libfribidi-dev \
+    libharfbuzz-dev \
+    libgit2-dev \
+    libicu-dev \
+    libjpeg-dev \
+    libpcre2-dev \
+    libpcre3-dev \
+    libpng-dev \
+    libreadline-dev \
+    libtiff-dev \
+    libxml2-dev \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+###################################################################
+########### stand up R ############################################
 
 # change working dir
-WORKDIR /usr/local/bin
+WORKDIR /tmp
 
 # install R
-RUN wget https://cran.r-project.org/src/base/R-4/R-${r_version}.tar.gz
-RUN tar -zxvf R-${r_version}.tar.gz
-WORKDIR /usr/local/bin/R-${r_version}
-RUN ./configure --prefix=/usr/local/ --with-x=no
-RUN make
-RUN make install
+RUN set -eux; \
+    wget https://cran.r-project.org/src/base/R-4/R-${R_VERSION}.tar.gz; \
+    tar -xzf R-${R_VERSION}.tar.gz; \
+    cd R-${R_VERSION}; \
+    ./configure --prefix=/usr/local --with-x=no --enable-R-shlib; \
+    make -j$(nproc); \
+    make install; \
+    cd /; \
+    rm -rf /tmp/R-${R_VERSION}*
 
 # install R packages
-RUN R --vanilla -e 'install.packages(c("devtools", "BiocManager"), repos="http://cran.us.r-project.org")'
-RUN R --vanilla -e 'BiocManager::install(c("DNAcopy", "biomaRt", "copynumber", "GenVisR", "fgsea", "deseq2", "EBSeq", "BSgenome.Hsapiens.UCSC.hg19", "BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg19.knownGene", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db", "NanoStringDiff", "ATACseqQC", "BSgenome.Mmusculus.UCSC.mm10", "TxDb.Mmusculus.UCSC.mm10", "BiocGenerics"))'
-RUN R --vanilla -e 'install.packages(c("optparse", "mdscore", "ggplot2", "data.table", "sequenza", "dplyr", "reshape2", "tidyr", "viridis", "cowplot", "ggalluvial", "msigdbr", "ggdendro", "gridExtra", "deconstructSigs", "tidyverse", "splitstackshape", "fastcluster", "gtools", "kableExtra", "mutSignatures", "R.utils"), repos = "http://cran.us.r-project.org")'
+RUN R --vanilla -e 'options(Ncpus = parallel::detectCores()); install.packages(c( \
+  "arrow", \
+  "BiocManager", \
+  "curl", \
+  "data.table", \
+  "devtools", \
+  "fs", \
+  "ggforce", \
+  "here", \
+  "httr", \
+  "janitor", \
+  "jsonlite", \
+  "matrixStats", \
+  "openssl", \
+  "patchwork", \
+  "Rcpp", \
+  "readxl", \
+  "remotes", \
+  "tidyverse", \
+  "xml2", \
+  "yaml" \
+), repos="https://cloud.r-project.org")'
 
-# copy any one-off R scripts over
-RUN mkdir -p /opt/scripts/R
-COPY scripts/optitype2imgt.R /opt/scripts/R
+RUN R --vanilla -e 'options(Ncpus = parallel::detectCores()); BiocManager::install(c( \
+  "BiocGenerics", \
+  "Biostrings", \
+  "GenomicAlignments", \
+  "GenomicRanges", \
+  "IRanges", \
+  "Rsamtools", \
+  "rtracklayer", \
+  "S4Vectors", \
+  "SummarizedExperiment" \
+), ask = FALSE, update = FALSE)'
