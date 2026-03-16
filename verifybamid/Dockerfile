@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN set -eux; \
     mkdir -p /tmp/; \
+    mkdir -p /data; \
     cd /tmp/; \
     wget -q -O verifybamid.tar.gz "https://github.com/Griffan/VerifyBamID/archive/refs/tags/${VERIFYBAMID_VERSION}.tar.gz"; \
     tar -xzf verifybamid.tar.gz; \
@@ -29,6 +30,7 @@ RUN set -eux; \
     make; \
     make test; \
     mv ../bin/* /usr/local/bin; \
+    mv ../resource/* /data; \
     rm -rf /tmp/verifybamid.tar.gz /tmp/VerifyBamID-${VERIFYBAMID_VERSION}
 
 WORKDIR /data
