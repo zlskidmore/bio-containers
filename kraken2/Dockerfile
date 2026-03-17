@@ -7,7 +7,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 # set the environment variables
 ENV KRAKEN_VERSION="2.17.1" \
     BRACKEN_VERSION="3.1" \
-    KRAKEN_TOOLS_VERSION="1.2.1"
+    KRAKEN_TOOLS_VERSION="1.2.1" \
+    LANG="C.UTF-8" \
+    LC_ALL=:"C.UTF-8"
 
 # Additional libs needed
 RUN apt-get update && apt-get install -y --no-install-recommends \
