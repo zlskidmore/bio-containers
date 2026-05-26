@@ -4,10 +4,10 @@ FROM zlskidmore/bio-base:1.0.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG somalier_version=0.3.1
+ARG somalier_version=0.3.2
 ARG nim_version=v1.6.10
 ARG hts_nim_ref=0.2.8
-ARG slivar_ref=0.3.1
+ARG slivar_ref=0.3.2
 
 # Additional libs needed
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -59,10 +59,6 @@ RUN set -eux && \
     curl -fsSL "https://github.com/brentp/somalier/archive/refs/tags/v${somalier_version}.tar.gz" -o somalier.tar.gz && \
     tar -xzf somalier.tar.gz && \
     mv "somalier-${somalier_version}" somalier && \
-    if [ "$(uname -m)" = "aarch64" ]; then \
-      find somalier -type f \( -name "*.nim" -o -name "*.cfg" -o -name "*.nimble" \) -exec sed -i '/-mpopcnt/d' {} \; || true; \
-      sed -i '/slivar/d' somalier/somalier.nimble || true; \
-    fi && \
     cd somalier && \
     nimble install -d -y && \
     nim c -d:danger -d:nsb_static -d:release -d:nimDebugDlOpen -d:openmp \
