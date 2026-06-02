@@ -9,7 +9,7 @@ ENV KRAKEN_VERSION="2.17.1" \
     BRACKEN_VERSION="3.1" \
     KRAKEN_TOOLS_VERSION="1.2.1" \
     LANG="C.UTF-8" \
-    LC_ALL=:"C.UTF-8"
+    LC_ALL="C.UTF-8"
 
 # Additional libs needed
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -40,10 +40,13 @@ RUN set -eux; \
        Bracken-${BRACKEN_VERSION}/bracken \
        Bracken-${BRACKEN_VERSION}/bracken-build \
        Bracken-${BRACKEN_VERSION}/src/kmer2read_distr \
-       Bracken-${BRACKEN_VERSION}/src/generate_kmer_distribution.py \
-       Bracken-${BRACKEN_VERSION}/src/est_abundance.py \
        /usr/local/bin/; \
-    chmod +x /usr/local/bin/bracken /usr/local/bin/bracken-build /usr/local/bin/kmer2read_distr /usr/local/bin/*.py; \
+    mkdir -p /usr/local/bin/src; \
+    cp Bracken-${BRACKEN_VERSION}/src/est_abundance.py \
+       Bracken-${BRACKEN_VERSION}/src/generate_kmer_distribution.py \
+       /usr/local/bin/src/; \
+    chmod +x /usr/local/bin/bracken /usr/local/bin/bracken-build /usr/local/bin/kmer2read_distr \
+             /usr/local/bin/*.py /usr/local/bin/src/*.py; \
     rm -rf Bracken-${BRACKEN_VERSION} v${BRACKEN_VERSION}.tar.gz
 
 # KRAKENTOOLS
