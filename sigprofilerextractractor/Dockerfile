@@ -22,8 +22,10 @@ RUN set -eux; \
     tar -xzf v${SIGPROFILEREXTRACTOR_VERSION}.tar.gz; \
     cd SigProfilerExtractor-${SIGPROFILEREXTRACTOR_VERSION}; \
     pip install --no-cache-dir .; \
-    mkdir -p /usr/local/lib/python3.12/dist-packages/sigProfilerPlotting/templates; \
+    chmod -R a+rwX /usr/local/lib/python3.12/dist-packages/SigProfilerAssignment; \
     chmod -R a+rwx /usr/local/lib/python3.12/dist-packages/sigProfilerPlotting; \
+    chmod -R a+rwx /usr/local/lib/python3.12/dist-packages/SigProfilerMatrixGenerator; \
+    chmod -R a+rwx /usr/local/lib/python3.12/dist-packages/SigProfilerExtractor; \
     cd /; \
     rm -rf /tmp/build/SigProfilerExtractor-${SIGPROFILEREXTRACTOR_VERSION}*
 
