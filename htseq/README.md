@@ -1,43 +1,54 @@
-# HTSeq container
+# HTSeq
 
-Place this directory at `htseq/` in `zlskidmore/bio-containers`.
-The Dockerfile follows the repository's MultiQC layout: `bio-base:1.0.0`,
-an `/opt/venv` environment, and `/data` as the working directory.
-It inherits the base image's default Bash command.
+Docker container for **HTSeq 2.1.2**, a Python library for analyzing high-throughput sequencing data. Includes `htseq-count`, `htseq-count-barcodes`, and `htseq-qa` with matplotlib support.
 
-HTSeq is pinned to 2.1.2 and installed from PyPI using its documented pip
-installation method. Includes `htseq-count`, `htseq-count-barcodes`, and
-`htseq-qa` with matplotlib's noninteractive Agg backend.
-Python development headers and SWIG support builds where no HTSeq wheel
-is available. Optional BigWig, MTX, H5AD, and Loom dependencies are not included.
-Transitive Python dependencies are not pinned.
+**Platforms:** Linux AMD64 (Intel/AMD) and ARM64 (including Apple Silicon through Docker).
 
-## Build and check
+[Docker Hub](https://hub.docker.com/r/zlskidmore/htseq) · [Dockerfile](./Dockerfile) · [HTSeq documentation](https://htseq.readthedocs.io/)
 
-From the repository root, with Docker running:
+## Pull and run
 
 ```bash
-docker build -t zlskidmore/htseq:2.1.2 ./htseq
+docker pull zlskidmore/htseq:2.1.2
 docker run --rm zlskidmore/htseq:2.1.2 htseq-count --help
 ```
 
-The image build also checks package dependency consistency, the HTSeq version,
-and help output from all three command-line tools.
+Docker automatically selects the image matching your architecture. The default working directory is `/data`; mount your input directory there to access local files.
 
 ## Count reads
 
-For paired-end BAM records sorted by read name, and an unstranded assay:
+For a BAM file sorted by read name and an unstranded library, run from the directory containing your BAM and GTF files:
 
 ```bash
 docker run --rm -v "$PWD:/data" zlskidmore/htseq:2.1.2 \
-    htseq-count -f bam -r name -s no reads.name_sorted.bam genes.gtf > counts.tsv
+    htseq-count -f bam -r name -s no \
+    reads.name_sorted.bam genes.gtf > counts.tsv
 ```
 
-Set `-r` to match the input sort order and `-s` to match the library protocol.
+Counts are saved to `counts.tsv` on your host. Set `-r` to match the BAM sort order (`name` or `pos`) and `-s` to match your library protocol (`yes`, `no`, or `reverse`).
 
-## Multi-platform build
+## Other commands
 
-To create a local OCI archive without publishing:
+```bash
+docker run --rm zlskidmore/htseq:2.1.2 htseq-count-barcodes --help
+docker run --rm zlskidmore/htseq:2.1.2 htseq-qa --help
+```
+
+To open an interactive shell with access to your current directory:
+
+```bash
+docker run --rm -it -v "$PWD:/data" zlskidmore/htseq:2.1.2 bash
+```
+
+## Build locally
+
+From the root of the `bio-containers` repository:
+
+```bash
+docker build -t zlskidmore/htseq:2.1.2 ./htseq
+```
+
+To build both architectures into an OCI archive:
 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 \
@@ -45,26 +56,23 @@ docker buildx build --platform linux/amd64,linux/arm64 \
     --output type=oci,dest=htseq-2.1.2.tar ./htseq
 ```
 
-Both platforms require a compatible `zlskidmore/bio-base:1.0.0` image and
-a builder configured for those platforms.
+Multi-platform builds require a builder configured for both architectures.
+
+## Image details
+
+- Based on `zlskidmore/bio-base:1.0.0`.
+- HTSeq is installed in `/opt/venv`, with its commands available on `PATH`.
+- `htseq-qa` uses matplotlib's noninteractive `Agg` backend.
+- Python development headers and SWIG support source builds on ARM64.
+- Optional dependencies for BigWig, MTX, H5AD, and Loom support are not included.
+- HTSeq is version-pinned; transitive Python dependencies are not pinned.
 
 ## Validation
 
-On October 16, 2026, both `linux/arm64` and `linux/amd64` built successfully
-with Docker Desktop and were loaded locally as `zlskidmore/htseq:2.1.2`.
-ARM64 compiled HTSeq from source; AMD64 installed its published wheel.
-Both passed dependency consistency, HTSeq version 2.1.2, and help checks for
-all three commands. Each image also processed a synthetic SAM/GTF fixture
-and returned the expected count of one read for `gene1`, with all special
-counter values zero. Runtime architectures were confirmed as `aarch64`
-and `x86_64`; these are Docker Desktop tests, not separate physical-host tests.
+Both AMD64 and ARM64 images were built and tested using Docker Desktop. Checks covered dependency consistency, HTSeq version, help output for all three commands, and a synthetic SAM/GTF read-counting test that returned the expected result. AMD64 testing used Docker Desktop's architecture support rather than a separate physical Intel host.
 
-The local multi-platform image digest is
-`sha256:dd3b02177cabdaefc9b4a3407dd489eecae865c189f1bb04541c9ef376ca187c`.
-No image was pushed to a registry.
+## Credits
 
-## References
+Container maintained by [Zachary Skidmore](https://zlskidmore.github.io) as part of [bio-containers](https://github.com/zlskidmore/bio-containers).
 
-- Repository style: https://github.com/zlskidmore/bio-containers/blob/main/multiqc/Dockerfile
-- HTSeq source: https://github.com/htseq/htseq
-- HTSeq release and installation requirements: https://pypi.org/project/HTSeq/2.1.2/
+HTSeq is developed and maintained by the [HTSeq project](https://github.com/htseq/htseq). See its [documentation](https://htseq.readthedocs.io/) for usage guidance and citation information. HTSeq retains its upstream license; this repository provides the container build recipe.
