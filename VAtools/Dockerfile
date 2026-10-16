@@ -32,7 +32,20 @@ RUN set -eux; \
     cd bam-readcount-${BAM_READCOUNT_VERSION}; \
     mkdir build && cd build; \
     cmake ..; \
-    make
-#    install -m 755 bin/bam-readcount /usr/local/bin/bam-readcount
+    make; \
+    install -m 755 bin/bam-readcount /usr/local/bin/bam-readcount
+
+####################################################################
+############ readcount_helper Install ##############################
+
+COPY requirements.txt /opt/requirements.txt
+
+RUN pip install --no-cache-dir \
+    -r /opt/requirements.txt \
+    && rm requirements.txt
+
+COPY bam_readcount_helper.py /usr/local/bin/bam_readcount_helper
+
+RUN chmod 755 /usr/local/bin/bam_readcount_helper
 
 WORKDIR /data
