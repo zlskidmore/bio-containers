@@ -34,45 +34,44 @@ See each Dockerfile for its software version, dependencies, and installation met
 
 Find images under the [zlskidmore Docker Hub profile](https://hub.docker.com/u/zlskidmore). Use an explicit version tag when recording or sharing a workflow.
 
-For example, to pull HTSeq and display its read-counting options:
+Start with `bio-base`, the shared environment at the core of this collection. To pull it and check the bundled samtools installation:
 
 ```bash
-docker pull zlskidmore/htseq:2.1.2
-docker run --rm zlskidmore/htseq:2.1.2 htseq-count --help
+docker pull zlskidmore/bio-base:1.0.0
+docker run --rm zlskidmore/bio-base:1.0.0 samtools --version
 ```
 
 To make files in your current directory available inside the container:
 
 ```bash
-docker run --rm -v "$PWD:/data" -w /data zlskidmore/htseq:2.1.2 \
-    htseq-count -f bam -r name -s no \
-    reads.name_sorted.bam genes.gtf > counts.tsv
+docker run --rm -v "$PWD:/data" -w /data zlskidmore/bio-base:1.0.0 \
+    samtools flagstat reads.bam > flagstat.txt
 ```
 
-This example assumes a BAM file sorted by read name and an unstranded library. Adjust the options for your data and library protocol. See the [HTSeq directory](./htseq/) for more details.
+This example summarizes alignment statistics for `reads.bam` and saves the report to `flagstat.txt` on your host. See the [bio-base directory](./bio-base/) for the base image recipe and bundled tools.
 
 ## Build locally
 
-Clone the repository and build the tool you need:
+Clone the repository and build the core image:
 
 ```bash
 git clone https://github.com/zlskidmore/bio-containers.git
 cd bio-containers
-docker build -t zlskidmore/htseq:2.1.2 ./htseq
+docker build -t zlskidmore/bio-base:1.0.0 ./bio-base
 ```
 
 Replace the image name, tag, and directory with those for your chosen tool. Recipes that use `zlskidmore/bio-base` pull the base image specified in their Dockerfile.
 
 ## Platform support
 
-Architecture support depends on the tool, its dependencies, and the published image tag. HTSeq 2.1.2 has been built and tested for both `linux/amd64` and `linux/arm64` using Docker Desktop. Do not assume every recipe supports both platforms.
+The published `bio-base:1.0.0` image provides both `linux/amd64` and `linux/arm64` variants. Architecture support for other images depends on the tool, its dependencies, and the published tag; check each image before choosing a platform.
 
-For a compatible recipe, Docker Buildx can create a multi-platform OCI archive:
+Docker Buildx can build bio-base for both architectures and save a multi-platform OCI archive:
 
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 \
-    -t zlskidmore/htseq:2.1.2 \
-    --output type=oci,dest=htseq-2.1.2.tar ./htseq
+    -t zlskidmore/bio-base:1.0.0 \
+    --output type=oci,dest=bio-base-1.0.0.tar ./bio-base
 ```
 
 This requires a builder configured for both target architectures.
