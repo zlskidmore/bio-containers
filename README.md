@@ -8,25 +8,41 @@ This repository keeps container definitions in one place so they are easier to i
 
 ## Container recipes
 
-| Tool or environment | Build recipe |
-| --- | --- |
-| Shared bioinformatics base | [bio-base](./bio-base/) |
-| fastp | [fastp](./fastp/) |
-| fgbio | [fgbio](./fgbio/) |
-| HTSeq | [htseq](./htseq/) |
-| kallisto | [kallisto](./kallisto/) |
-| Kraken 2 | [kraken2](./kraken2/) |
-| mosdepth | [mosdepth](./mosdepth/) |
-| MultiQC | [multiqc](./multiqc/) |
-| Picard | [picard](./picard/) |
-| preseq | [preseq](./preseq/) |
-| R, Bioconductor, and CRAN environment | [r-bioc-cran](./r-bioc-cran/) |
-| SciClone | [sciclone](./sciclone/) |
-| SigProfilerExtractor | [sigprofilerextractractor](./sigprofilerextractractor/) |
-| Somalier | [somalier](./somalier/) |
-| STAR | [star](./star/) |
-| TelSeq | [telseq](./telseq/) |
-| VerifyBamID | [verifybamid](./verifybamid/) |
+The repository contains 31 container recipes.
+
+| Tool or environment | Purpose | Build recipe |
+| --- | --- | --- |
+| Shared bioinformatics base | Common command-line tools and dependencies | [bio-base](./bio-base/) |
+| AGFusion | Fusion sequence prediction, annotation, and visualization | [agfusion](./agfusion/) |
+| BBTools | Read processing, filtering, and sequence utilities | [bbtools](./bbtools/) |
+| BWA-MEM2 | Short-read DNA alignment (Linux AMD64) | [bwa-mem2](./bwa-mem2/) |
+| CNVkit | Copy-number analysis and visualization | [cnvkit](./cnvkit/) |
+| Delly | Structural variant discovery and genotyping | [delly](./delly/) |
+| fastp | FASTQ quality control, filtering, and trimming | [fastp](./fastp/) |
+| FastQC | Sequencing read quality reports | [fastqc](./fastqc/) |
+| fgbio | Sequencing utilities and UMI consensus workflows | [fgbio](./fgbio/) |
+| HTSeq | Read counting against genomic features | [htseq](./htseq/) |
+| kallisto | Transcript abundance quantification | [kallisto](./kallisto/) |
+| Kraken 2 | Taxonomic classification of sequencing reads | [kraken2](./kraken2/) |
+| minimap2 | Long-read and assembly alignment | [minimap2](./minimap2/) |
+| mosdepth | Sequencing depth and coverage summaries | [mosdepth](./mosdepth/) |
+| MultiQC | Aggregate quality-control reports | [multiqc](./multiqc/) |
+| OptiType | HLA class I typing at HLA-A, HLA-B, and HLA-C | [optitype](./optitype/) |
+| Picard | Sequencing data manipulation and metrics | [picard](./picard/) |
+| preseq | Library complexity estimation | [preseq](./preseq/) |
+| PyClone-VI and PhyClone | Clonal clustering and tumor phylogeny inference | [pyclone-iv](./pyclone-iv/) |
+| R, Bioconductor, and CRAN environment | R-based analysis and visualization | [r-bioc-cran](./r-bioc-cran/) |
+| rMATS-turbo | Differential alternative splicing analysis | [rmats-turbo](./rmats-turbo/) |
+| Salmon | Transcript abundance quantification | [salmon](./salmon/) |
+| SciClone | Tumor subclonal population analysis | [sciclone](./sciclone/) |
+| SigProfilerExtractor | Mutational signature extraction | [sigprofilerextractractor](./sigprofilerextractractor/) |
+| Somalier | Sample identity and relatedness checks | [somalier](./somalier/) |
+| STAR | Spliced RNA-seq alignment | [star](./star/) |
+| STAR-Fusion | RNA-seq fusion detection | [star-fusion](./star-fusion/) |
+| TelomereHunter2 | Telomere content and composition analysis | [telomerehunter2](./telomerehunter2/) |
+| TelSeq | Telomere length estimation from sequencing reads | [telseq](./telseq/) |
+| VAtools and bam-readcount | Variant annotation utilities and per-base read counts | [VAtools](./VAtools/) |
+| VerifyBamID | Sample contamination estimation | [verifybamid](./verifybamid/) |
 
 See each Dockerfile for its software version, dependencies, and installation method. Published image tags and supported architectures are listed on Docker Hub.
 
